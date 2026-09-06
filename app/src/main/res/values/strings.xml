@@ -1,3 +1,35 @@
 <resources>
     <string name="app_name">AkbarTime</string>
+    <string name="greeting_assalamualaikum">Assalamualaikum,</string>
+    <string name="prayer_schedule_today">Jadwal Sholat Hari Ini</string>
+    <string name="settings">Pengaturan</string>
+    <string name="location">Lokasi</string>
+    <string name="select_city">Pilih Kota</string>
+    <string name="detect_location">Deteksi Otomatis (GPS)</string>
+    <string name="adzan_sound">Suara Adzan</string>
+    <string name="detected_location">Lokasi Terdeteksi</string>
+
+    <string name="prayer_imsak">Imsak</string>
+    <string name="prayer_subuh">Subuh</string>
+    <string name="prayer_dhuha">Dhuha</string>
+    <string name="prayer_dzuhur">Dzuhur</string>
+    <string name="prayer_ashar">Ashar</string>
+    <string name="prayer_maghrib">Maghrib</string>
+    <string name="prayer_isya">Isya</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_jadwal">Jadwal</string>
+    <string name="notification_channel_name">Waktu Sholat</string>
+    <string name="notification_channel_desc">Notifikasi waktu sholat</string>
+    <string name="notification_content_text">Saatnya menunaikan ibadah sholat %1$s</string>
+
+    <string name="pre_reminder_title">Pengingat Awal</string>
+    <string name="pre_reminder_desc">10 menit sebelum waktu sholat</string>
+    <string name="manual_correction_title">Koreksi Waktu (Menit)</string>
+    <string name="battery_optimize_title">Keandalan</string>
+    <string name="battery_optimize_label">Agar Adzan Selalu Bunyi</string>
+    <string name="battery_optimize_desc">Beberapa hp mematikan aplikasi otomatis. Pastikan aplikasi ini dikecualikan dari optimasi baterai.</string>
+    <string name="btn_open_battery_settings">Buka Pengaturan Baterai</string>
+    <string name="silent_mode_title">Mode Diam Otomatis</string>
+    <string name="silent_mode_desc">Hp akan senyap selama 15 menit setelah adzan</string>
 </resources>

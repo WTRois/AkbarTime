@@ -2,4 +2,19 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="app_background">#FDF6E9</color>
+    <color name="surface_card">#FFFFFF</color>
+    <color name="surface_card_warm">#FFF3E0</color>
+    <color name="accent_primary">#F97F31</color>
+    <color name="text_primary">#1F1B16</color>
+    <color name="text_secondary">#8A8078</color>
+
+    <color name="chip_imsak">#FFF9C4</color>
+    <color name="chip_subuh">#E1F5FE</color>
+    <color name="chip_dhuha">#F3E5F5</color>
+    <color name="chip_dzuhur">#E8F5E9</color>
+    <color name="chip_ashar">#FFF3E0</color>
+    <color name="chip_maghrib">#FBE9E7</color>
+    <color name="chip_isya">#EDE7F6</color>
 </resources>

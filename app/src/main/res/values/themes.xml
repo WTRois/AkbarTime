@@ -1,9 +1,38 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.AkbarTime" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <style name="Base.Theme.AkbarTime" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/accent_primary</item>
+        <item name="colorSecondary">@color/accent_primary</item>
+        <item name="android:windowBackground">@color/app_background</item>
+        <item name="android:statusBarColor">@color/app_background</item>
     </style>
 
     <style name="Theme.AkbarTime" parent="Base.Theme.AkbarTime" />
+
+    <!-- Typography -->
+    <style name="TextAppearance.AkbarTime.Heading1" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:fontFamily">@font/sora</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.AkbarTime.Heading2" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:fontFamily">@font/sora</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.AkbarTime.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.AkbarTime.Caption" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
 </resources>
