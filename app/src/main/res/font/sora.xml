@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<font-family xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!-- Placeholder: User must add sora_semibold.ttf and sora_bold.ttf to this folder -->
+    <font
+        app:font="@font/sora_semibold"
+        app:fontStyle="normal"
+        app:fontWeight="600" />
+    <font
+        app:font="@font/sora_bold"
+        app:fontStyle="normal"
+        app:fontWeight="700" />
+</font-family>

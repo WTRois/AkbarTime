@@ -1,0 +1,2 @@
+PLACEHOLDER: Ganti file ini dengan audio adzan berformat .mp3 atau .wav (misal: adzan.mp3).
+Rekomendasi: 64kbps Mono MP3 untuk menjaga ukuran APK tetap kecil (< 8MB).
