@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/neob_text"
+        android:pathData="M19,6L19,18L5,18L5,6L19,6M21,4L3,4L3,20L21,20L21,4Z" />
+    <path
+        android:fillColor="@color/neob_primary"
+        android:pathData="M5,6h14v4h-14z" />
+    <path
+        android:fillColor="@color/neob_text"
+        android:pathData="M11,10h2v8h-2z" />
+</vector>
