@@ -1,10 +1,26 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.AkbarTime" parent="Theme.Material3.Light.NoActionBar">
-        <item name="colorPrimary">@color/accent_primary</item>
-        <item name="colorSecondary">@color/accent_primary</item>
-        <item name="android:windowBackground">@color/app_background</item>
-        <item name="android:statusBarColor">@color/app_background</item>
+        <item name="colorPrimary">@color/neob_primary</item>
+        <item name="colorSecondary">@color/neob_primary</item>
+        <item name="android:windowBackground">@color/neob_background</item>
+        <item name="android:statusBarColor">@color/neob_background</item>
+        <!-- Global font (Poppins for all body text) -->
+        <item name="android:fontFamily">@font/poppins</item>
+    </style>
+
+    <!-- theme-neob specific styles -->
+    <style name="Widget.AkbarTime.NeobCard" parent="">
+        <item name="android:background">@drawable/bg_neob_card</item>
+    </style>
+
+    <style name="Widget.AkbarTime.NeobButton" parent="Widget.Material3.Button">
+        <item name="android:background">@drawable/bg_neob_button</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textColor">@color/neob_text</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="backgroundTint">@null</item>
     </style>
 
     <style name="Theme.AkbarTime" parent="Base.Theme.AkbarTime" />

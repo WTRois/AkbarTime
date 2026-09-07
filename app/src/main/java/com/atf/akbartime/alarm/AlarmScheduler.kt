@@ -8,8 +8,7 @@ import android.os.Build
 import com.atf.akbartime.data.PrayerName
 import com.atf.akbartime.data.PrayerTimes
 import com.atf.akbartime.data.SettingsRepository
-import java.time.LocalDateTime
-import java.time.ZoneId
+import java.time.ZonedDateTime
 
 class AlarmScheduler(private val context: Context) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -25,7 +24,7 @@ class AlarmScheduler(private val context: Context) {
         schedulePrayer(PrayerName.ISHA, prayerTimes.isha)
     }
 
-    private fun schedulePrayer(name: PrayerName, time: LocalDateTime) {
+    private fun schedulePrayer(name: PrayerName, time: ZonedDateTime) {
         // Main Alarm
         scheduleAlarm(name, time, false)
 
@@ -35,7 +34,7 @@ class AlarmScheduler(private val context: Context) {
         }
     }
 
-    private fun scheduleAlarm(name: PrayerName, time: LocalDateTime, isPreReminder: Boolean) {
+    private fun scheduleAlarm(name: PrayerName, time: ZonedDateTime, isPreReminder: Boolean) {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("PRAYER_NAME", name.name)
             putExtra("IS_PRE_REMINDER", isPreReminder)
@@ -49,7 +48,7 @@ class AlarmScheduler(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val millis = time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val millis = time.toInstant().toEpochMilli()
 
         if (System.currentTimeMillis() < millis) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

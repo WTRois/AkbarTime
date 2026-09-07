@@ -11,7 +11,8 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:text="Subuh"
-        android:textAppearance="@style/TextAppearance.AkbarTime.BodyMedium" />
+        android:textAppearance="@style/TextAppearance.AkbarTime.BodyMedium"
+        android:textColor="@color/neob_text" />
 
     <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/switchSetting"
@@ -19,6 +20,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        app:thumbTint="@color/accent_primary"
-        app:trackTint="@color/accent_primary" />
+        app:thumbTint="@color/neob_primary"
+        app:trackTint="@color/neob_border" />
 </RelativeLayout>

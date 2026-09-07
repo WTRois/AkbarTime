@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp">
+    android:padding="12dp">
 
     <TextView
         android:id="@+id/tvCorrectionLabel"
@@ -10,7 +11,8 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:text="Subuh"
-        android:textAppearance="@style/TextAppearance.AkbarTime.BodyMedium" />
+        android:textAppearance="@style/TextAppearance.AkbarTime.BodyMedium"
+        android:textColor="@color/neob_text" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -23,24 +25,28 @@
             android:id="@+id/btnMinus"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_input_delete"
-            android:rotation="90" />
+            android:background="@drawable/bg_neob_icon_button"
+            android:padding="8dp"
+            android:src="@drawable/ic_minus_black"
+            app:tint="@color/neob_text" />
 
         <TextView
             android:id="@+id/tvCorrectionValue"
-            android:layout_width="40dp"
+            android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="0"
+            android:text="+0"
             android:textAppearance="@style/TextAppearance.AkbarTime.Heading2"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:textColor="@color/neob_text" />
 
         <ImageButton
             android:id="@+id/btnPlus"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_input_add" />
+            android:background="@drawable/bg_neob_icon_button"
+            android:padding="8dp"
+            android:src="@drawable/ic_plus_black"
+            app:tint="@color/neob_text" />
     </LinearLayout>
 </RelativeLayout>

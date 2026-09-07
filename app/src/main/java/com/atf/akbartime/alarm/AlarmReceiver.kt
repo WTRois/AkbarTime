@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
@@ -32,9 +33,18 @@ class AlarmReceiver : BroadcastReceiver() {
             showPreReminderNotification(context, prayerName)
         } else {
             showNotification(context, prayerName)
-            if (isMainPrayer(prayerName)) {
-                playAdzan(context)
-                handleSilentMode(context)
+            
+            val settings = SettingsRepository(context)
+            try {
+                if (settings.isAdzanEnabled(PrayerName.valueOf(prayerName))) {
+                    if (isMainPrayer(prayerName)) {
+                        Log.d("AlarmReceiver", "Playing adzan for $prayerName")
+                        playAdzan(context)
+                        handleSilentMode(context)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AlarmReceiver", "Error in onReceive", e)
             }
         }
     }
@@ -42,16 +52,32 @@ class AlarmReceiver : BroadcastReceiver() {
     private fun handleSilentMode(context: Context) {
         val settings = SettingsRepository(context)
         if (settings.isSilentModeEnabled()) {
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            
+            // Check if we have permission to change Do Not Disturb state (required for Android 6.0+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !notificationManager.isNotificationPolicyAccessGranted) {
+                Log.w("AlarmReceiver", "Cannot change silent mode: Notification Policy Access not granted")
+                return
+            }
+
             val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            val originalMode = audioManager.ringerMode
-            
-            // Set to silent/vibrate
-            audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
-            
-            // Restore after 15 minutes
-            Handler(Looper.getMainLooper()).postDelayed({
-                audioManager.ringerMode = originalMode
-            }, 15 * 60 * 1000)
+            try {
+                val originalMode = audioManager.ringerMode
+                
+                // Set to vibrate
+                audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+                
+                // Restore after 15 minutes
+                Handler(Looper.getMainLooper()).postDelayed({
+                    try {
+                        audioManager.ringerMode = originalMode
+                    } catch (e: Exception) {
+                        Log.e("AlarmReceiver", "Error restoring ringer mode", e)
+                    }
+                }, 15 * 60 * 1000)
+            } catch (e: SecurityException) {
+                Log.e("AlarmReceiver", "SecurityException when changing ringer mode", e)
+            }
         }
     }
 
@@ -117,11 +143,34 @@ class AlarmReceiver : BroadcastReceiver() {
 
     private fun playAdzan(context: Context) {
         try {
-            val mediaPlayer = MediaPlayer.create(context, R.raw.adzan)
-            mediaPlayer?.apply {
-                setOnCompletionListener { it.release() }
-                start()
+            val mediaPlayer = MediaPlayer()
+            
+            // Use Alarm stream so it rings even if Media is muted
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            mediaPlayer.setAudioAttributes(audioAttributes)
+
+            val afd = context.resources.openRawResourceFd(R.raw.adzan)
+            mediaPlayer.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+            afd.close()
+
+            mediaPlayer.setOnPreparedListener { 
+                Log.d("AlarmReceiver", "MediaPlayer prepared, starting playback")
+                it.start() 
             }
+            mediaPlayer.setOnCompletionListener { 
+                Log.d("AlarmReceiver", "MediaPlayer completed, releasing")
+                it.release() 
+            }
+            mediaPlayer.setOnErrorListener { mp, what, extra ->
+                Log.e("AlarmReceiver", "MediaPlayer error: what=$what, extra=$extra")
+                mp.release()
+                true
+            }
+            
+            mediaPlayer.prepareAsync()
         } catch (e: Exception) {
             Log.e("AlarmReceiver", "Error playing adzan", e)
         }

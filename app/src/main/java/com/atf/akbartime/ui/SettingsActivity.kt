@@ -1,5 +1,6 @@
 package com.atf.akbartime.ui
 
+import android.app.NotificationManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -10,19 +11,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.atf.akbartime.MainActivity
 import com.atf.akbartime.R
+import com.atf.akbartime.alarm.AlarmReceiver
+import com.atf.akbartime.alarm.AlarmScheduler
 import com.atf.akbartime.data.PrayerName
 import com.atf.akbartime.data.SettingsRepository
 import com.atf.akbartime.databinding.ActivitySettingsBinding
 import com.atf.akbartime.databinding.ItemSettingCorrectionBinding
 import com.atf.akbartime.databinding.ItemSettingToggleBinding
 import com.atf.akbartime.location.LocationRepository
+import com.atf.akbartime.prayer.PrayerTimeRepository
+import java.util.Date
 
 class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var locationRepository: LocationRepository
+    private lateinit var prayerRepository: PrayerTimeRepository
+    private lateinit var alarmScheduler: AlarmScheduler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,14 +40,56 @@ class SettingsActivity : AppCompatActivity() {
 
         settingsRepository = SettingsRepository(this)
         locationRepository = LocationRepository(this)
+        prayerRepository = PrayerTimeRepository(settingsRepository)
+        alarmScheduler = AlarmScheduler(this)
 
         setupToolbar()
+        setupBottomNav()
         setupCitySpinner()
         setupAdzanToggles()
         setupManualCorrections()
         setupExtraFeatures()
+        setupTestAlarm()
         setupLocationDetection()
         setupBatteryOptimization()
+    }
+
+    private fun setupBottomNav() {
+        binding.bottomNavigation.selectedItemId = R.id.nav_settings
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    overridePendingTransition(0, 0)
+                    finish()
+                    true
+                }
+                R.id.nav_kiblat -> {
+                    startActivity(Intent(this, QiblaActivity::class.java))
+                    overridePendingTransition(0, 0)
+                    finish()
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun setupTestAlarm() {
+        binding.btnTestAlarm.setOnClickListener {
+            Toast.makeText(this, "Menjalankan Test Adzan...", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, AlarmReceiver::class.java).apply {
+                putExtra("PRAYER_NAME", PrayerName.MAGHRIB.name)
+                putExtra("IS_PRE_REMINDER", false)
+            }
+            sendBroadcast(intent)
+        }
+    }
+
+    private fun rescheduleAlarms() {
+        val location = settingsRepository.getLocation() ?: return
+        val prayerTimes = prayerRepository.calculatePrayerTimes(location, Date())
+        alarmScheduler.schedulePrayerAlarms(prayerTimes)
     }
 
     private fun setupToolbar() {
@@ -47,25 +98,21 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun setupCitySpinner() {
         val cities = locationRepository.getPresetCities()
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, cities.map { it.cityLabel })
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerCities.adapter = adapter
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, cities.map { it.cityLabel })
+        binding.autoCompleteCities.setAdapter(adapter)
 
         val currentLocation = settingsRepository.getLocation()
         currentLocation?.let { loc ->
-            val index = cities.indexOfFirst { it.cityLabel == loc.cityLabel }
-            if (index != -1) {
-                binding.spinnerCities.setSelection(index)
-            }
+            binding.autoCompleteCities.setText(loc.cityLabel, false)
         }
 
-        binding.spinnerCities.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selectedCity = cities[position]
-                settingsRepository.saveLocation(selectedCity)
+        binding.autoCompleteCities.onItemClickListener = AdapterView.OnItemClickListener { parent, _, position, _ ->
+            val selectedCityLabel = parent.getItemAtPosition(position) as String
+            val selectedCity = cities.find { it.cityLabel == selectedCityLabel }
+            selectedCity?.let {
+                settingsRepository.saveLocation(it)
+                rescheduleAlarms()
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
 
@@ -76,6 +123,7 @@ class SettingsActivity : AppCompatActivity() {
             toggleBinding.switchSetting.isChecked = settingsRepository.isAdzanEnabled(prayer)
             toggleBinding.switchSetting.setOnCheckedChangeListener { _, isChecked ->
                 settingsRepository.setAdzanEnabled(prayer, isChecked)
+                // No need to reschedule for just audio toggle, Receiver checks it
             }
             binding.adzanToggleContainer.addView(toggleBinding.root)
         }
@@ -93,12 +141,14 @@ class SettingsActivity : AppCompatActivity() {
                 currentOffset++
                 settingsRepository.setOffset(prayer, currentOffset)
                 correctionBinding.tvCorrectionValue.text = if (currentOffset >= 0) "+$currentOffset" else currentOffset.toString()
+                rescheduleAlarms()
             }
             
             correctionBinding.btnMinus.setOnClickListener {
                 currentOffset--
                 settingsRepository.setOffset(prayer, currentOffset)
                 correctionBinding.tvCorrectionValue.text = if (currentOffset >= 0) "+$currentOffset" else currentOffset.toString()
+                rescheduleAlarms()
             }
             
             binding.correctionContainer.addView(correctionBinding.root)
@@ -111,12 +161,24 @@ class SettingsActivity : AppCompatActivity() {
         binding.layoutPreReminder.switchSetting.isChecked = settingsRepository.isPreReminderEnabled()
         binding.layoutPreReminder.switchSetting.setOnCheckedChangeListener { _, isChecked ->
             settingsRepository.setPreReminderEnabled(isChecked)
+            rescheduleAlarms()
         }
 
         // Silent Mode
         binding.layoutSilentMode.tvSettingLabel.text = getString(R.string.silent_mode_title)
         binding.layoutSilentMode.switchSetting.isChecked = settingsRepository.isSilentModeEnabled()
         binding.layoutSilentMode.switchSetting.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                val nm = getSystemService(NotificationManager::class.java)
+                if (!nm.isNotificationPolicyAccessGranted) {
+                    // Reset toggle and ask for permission
+                    binding.layoutSilentMode.switchSetting.isChecked = false
+                    val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                    startActivity(intent)
+                    Toast.makeText(this, "Izin 'Jangan Ganggu' diperlukan untuk fitur ini", Toast.LENGTH_LONG).show()
+                    return@setOnCheckedChangeListener
+                }
+            }
             settingsRepository.setSilentModeEnabled(isChecked)
         }
     }

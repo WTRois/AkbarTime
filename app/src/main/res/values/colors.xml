@@ -3,11 +3,22 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="app_background">#FDF6E9</color>
-    <color name="surface_card">#FFFFFF</color>
-    <color name="surface_card_warm">#FFF3E0</color>
-    <color name="accent_primary">#F97F31</color>
-    <color name="text_primary">#1F1B16</color>
+    <!-- Neobrutalism Palette (theme-neob) -->
+    <color name="neob_background">#FFF9EE</color>
+    <color name="neob_text">#121212</color>
+    <color name="neob_border">#121212</color>
+    <color name="neob_card">#FFFFFF</color>
+    <color name="neob_primary">#FFE600</color>
+    <color name="neob_primary_hover">#FFD800</color>
+    <color name="neob_ghost_hover">#FFF9EE</color>
+    <color name="neob_error">#FF5C5C</color>
+    <color name="neob_list_hover">#FFFDEB</color>
+
+    <!-- Legacy / Backup for compatibility -->
+    <color name="app_background">@color/neob_background</color>
+    <color name="surface_card">@color/neob_card</color>
+    <color name="accent_primary">@color/neob_primary</color>
+    <color name="text_primary">@color/neob_text</color>
     <color name="text_secondary">#8A8078</color>
 
     <color name="chip_imsak">#FFF9C4</color>

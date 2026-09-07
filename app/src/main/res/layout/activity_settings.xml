@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_background">
+    android:background="@color/neob_background">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/app_background"
+        android:background="@color/neob_background"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
@@ -17,12 +17,14 @@
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@android:drawable/ic_menu_revert"
             app:title="@string/settings"
-            app:titleTextAppearance="@style/TextAppearance.AkbarTime.Heading2" />
+            app:titleTextAppearance="@style/TextAppearance.AkbarTime.Heading2"
+            app:titleTextColor="@color/neob_text" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="56dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -38,15 +40,16 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/location"
                 android:textAppearance="@style/TextAppearance.AkbarTime.Heading2"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="@color/neob_text" />
 
-            <com.google.android.material.card.MaterialCardView
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp">
+                android:background="@drawable/bg_neob_card"
+                android:paddingBottom="4dp"
+                android:paddingEnd="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -58,26 +61,41 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/select_city"
-                        android:textAppearance="@style/TextAppearance.AkbarTime.Caption" />
+                        android:textAppearance="@style/TextAppearance.AkbarTime.Caption"
+                        android:textColor="@color/neob_text" />
 
-                    <Spinner
-                        android:id="@+id/spinnerCities"
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginTop="8dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        app:boxStrokeWidth="2.5dp"
+                        app:boxStrokeColor="@color/neob_border"
+                        app:hintEnabled="false">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/autoCompleteCities"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_neob_card"
+                            android:hint="Cari kota..."
+                            android:inputType="text"
+                            android:padding="12dp"
+                            android:textAppearance="@style/TextAppearance.AkbarTime.BodyMedium"
+                            android:textColor="@color/neob_text" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnDetectLocation"
-                        style="@style/Widget.Material3.Button.TextButton"
+                        style="@style/Widget.AkbarTime.NeobButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/detect_location"
-                        android:textColor="@color/accent_primary"
                         app:icon="@android:drawable/ic_menu_mylocation"
-                        app:iconTint="@color/accent_primary" />
+                        app:iconTint="@color/neob_text" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
 
             <!-- Notification Section -->
             <TextView
@@ -86,15 +104,16 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/adzan_sound"
                 android:textAppearance="@style/TextAppearance.AkbarTime.Heading2"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="@color/neob_text" />
 
-            <com.google.android.material.card.MaterialCardView
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp">
+                android:background="@drawable/bg_neob_card"
+                android:paddingBottom="4dp"
+                android:paddingEnd="4dp">
 
                 <LinearLayout
                     android:id="@+id/adzanToggleContainer"
@@ -103,7 +122,7 @@
                     android:orientation="vertical"
                     android:padding="8dp">
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
 
             <!-- Manual Correction Section -->
             <TextView
@@ -112,15 +131,16 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/manual_correction_title"
                 android:textAppearance="@style/TextAppearance.AkbarTime.Heading2"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="@color/neob_text" />
 
-            <com.google.android.material.card.MaterialCardView
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp">
+                android:background="@drawable/bg_neob_card"
+                android:paddingBottom="4dp"
+                android:paddingEnd="4dp">
 
                 <LinearLayout
                     android:id="@+id/correctionContainer"
@@ -129,7 +149,7 @@
                     android:orientation="vertical"
                     android:padding="8dp">
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
 
             <!-- Pre-Reminder & Silent Mode -->
             <TextView
@@ -138,15 +158,16 @@
                 android:layout_marginBottom="8dp"
                 android:text="Fitur Tambahan"
                 android:textAppearance="@style/TextAppearance.AkbarTime.Heading2"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="@color/neob_text" />
 
-            <com.google.android.material.card.MaterialCardView
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp">
+                android:background="@drawable/bg_neob_card"
+                android:paddingBottom="4dp"
+                android:paddingEnd="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -161,14 +182,30 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#EEEEEE"
+                        android:background="@color/neob_border"
                         android:layout_marginHorizontal="16dp" />
 
                     <include
                         android:id="@+id/layoutSilentMode"
                         layout="@layout/item_setting_toggle" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/neob_border"
+                        android:layout_marginHorizontal="16dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTestAlarm"
+                        style="@style/Widget.AkbarTime.NeobButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:text="Test Notifikasi &amp; Adzan"
+                        app:icon="@android:drawable/ic_lock_idle_alarm"
+                        app:iconTint="@color/neob_text" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
 
             <!-- Reliability Section -->
             <TextView
@@ -177,15 +214,16 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/battery_optimize_title"
                 android:textAppearance="@style/TextAppearance.AkbarTime.Heading2"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="@color/neob_text" />
 
-            <com.google.android.material.card.MaterialCardView
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="@color/surface_card_warm"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp">
+                android:background="@drawable/bg_neob_card"
+                android:paddingBottom="4dp"
+                android:paddingEnd="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -198,27 +236,41 @@
                         android:layout_height="wrap_content"
                         android:text="@string/battery_optimize_label"
                         android:textAppearance="@style/TextAppearance.AkbarTime.BodyMedium"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:textColor="@color/neob_text" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="@string/battery_optimize_desc"
-                        android:textAppearance="@style/TextAppearance.AkbarTime.Caption" />
+                        android:textAppearance="@style/TextAppearance.AkbarTime.Caption"
+                        android:textColor="@color/neob_text" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnBatteryOptimize"
-                        style="@style/Widget.Material3.Button.TonalButton"
+                        style="@style/Widget.AkbarTime.NeobButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/btn_open_battery_settings"
-                        app:icon="@android:drawable/ic_lock_power_off" />
+                        app:icon="@android:drawable/ic_lock_power_off"
+                        app:iconTint="@color/neob_text" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/neob_card"
+        app:itemIconTint="@color/neob_text"
+        app:itemTextColor="@color/neob_text"
+        app:itemRippleColor="@color/neob_primary"
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

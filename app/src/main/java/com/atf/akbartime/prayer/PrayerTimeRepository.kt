@@ -8,8 +8,8 @@ import com.batoulapps.adhan.CalculationMethod
 import com.batoulapps.adhan.Coordinates
 import com.batoulapps.adhan.PrayerTimes as AdhanPrayerTimes
 import com.batoulapps.adhan.data.DateComponents
-import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.Date
 
 class PrayerTimeRepository(private val settingsRepository: SettingsRepository) {
@@ -21,12 +21,12 @@ class PrayerTimeRepository(private val settingsRepository: SettingsRepository) {
         val adhanTimes = AdhanPrayerTimes(coordinates, dateComponents, params)
         val zoneId = ZoneId.of(location.timezoneId)
 
-        val fajr = toLocalDateTime(adhanTimes.fajr, zoneId).plusMinutes(settingsRepository.getOffset(PrayerName.FAJR).toLong())
-        val sunrise = toLocalDateTime(adhanTimes.sunrise, zoneId)
-        val dhuhr = toLocalDateTime(adhanTimes.dhuhr, zoneId).plusMinutes(settingsRepository.getOffset(PrayerName.DHUHR).toLong())
-        val asr = toLocalDateTime(adhanTimes.asr, zoneId).plusMinutes(settingsRepository.getOffset(PrayerName.ASR).toLong())
-        val maghrib = toLocalDateTime(adhanTimes.maghrib, zoneId).plusMinutes(settingsRepository.getOffset(PrayerName.MAGHRIB).toLong())
-        val isha = toLocalDateTime(adhanTimes.isha, zoneId).plusMinutes(settingsRepository.getOffset(PrayerName.ISHA).toLong())
+        val fajr = toZonedDateTime(adhanTimes.fajr, zoneId).plusMinutes(settingsRepository.getOffset(PrayerName.FAJR).toLong())
+        val sunrise = toZonedDateTime(adhanTimes.sunrise, zoneId)
+        val dhuhr = toZonedDateTime(adhanTimes.dhuhr, zoneId).plusMinutes(settingsRepository.getOffset(PrayerName.DHUHR).toLong())
+        val asr = toZonedDateTime(adhanTimes.asr, zoneId).plusMinutes(settingsRepository.getOffset(PrayerName.ASR).toLong())
+        val maghrib = toZonedDateTime(adhanTimes.maghrib, zoneId).plusMinutes(settingsRepository.getOffset(PrayerName.MAGHRIB).toLong())
+        val isha = toZonedDateTime(adhanTimes.isha, zoneId).plusMinutes(settingsRepository.getOffset(PrayerName.ISHA).toLong())
 
         val baseImsak = fajr.minusMinutes(10)
         val imsakWithOffset = baseImsak.plusMinutes(settingsRepository.getOffset(PrayerName.IMSAK).toLong())
@@ -46,7 +46,7 @@ class PrayerTimeRepository(private val settingsRepository: SettingsRepository) {
         )
     }
 
-    private fun toLocalDateTime(date: Date, zoneId: ZoneId): LocalDateTime {
-        return LocalDateTime.ofInstant(date.toInstant(), zoneId)
+    private fun toZonedDateTime(date: Date, zoneId: ZoneId): ZonedDateTime {
+        return ZonedDateTime.ofInstant(date.toInstant(), zoneId)
     }
 }

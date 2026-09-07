@@ -19,10 +19,12 @@ import com.atf.akbartime.data.SettingsRepository
 import com.atf.akbartime.data.UserLocation
 import com.atf.akbartime.databinding.ActivityMainBinding
 import com.atf.akbartime.prayer.PrayerTimeRepository
+import com.atf.akbartime.ui.QiblaActivity
 import com.atf.akbartime.ui.SettingsActivity
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.chrono.HijrahDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -33,16 +35,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var prayerRepository: PrayerTimeRepository
     private val handler = Handler(Looper.getMainLooper())
-    private var nextPrayerTime: LocalDateTime? = null
+    private var nextPrayerTime: ZonedDateTime? = null
     private var nextPrayerName: String = ""
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        if (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
-            // Location permission granted
-        }
-    }
+    ) { _ -> }
 
     private val countdownRunnable = object : Runnable {
         override fun run() {
@@ -75,13 +73,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        binding.btnSettings.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-        }
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
+                R.id.nav_kiblat -> {
+                    startActivity(Intent(this, QiblaActivity::class.java))
+                    overridePendingTransition(0, 0)
+                    true
+                }
                 R.id.nav_settings -> {
                     startActivity(Intent(this, SettingsActivity::class.java))
+                    overridePendingTransition(0, 0)
                     true
                 }
                 else -> false
@@ -105,7 +106,6 @@ class MainActivity : AppCompatActivity() {
         val dateString = now.format(dateFormatter)
         var hijriString = hijriDate.format(hijriFormatter)
         
-        // Remove "Islamic Hijrah" prefix if present
         hijriString = hijriString.replace("Islamic Hijrah", "").trim()
         
         binding.tvDate.text = "$dateString • $hijriString H"
@@ -126,9 +126,8 @@ class MainActivity : AppCompatActivity() {
             requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
         }
 
-        // Check Exact Alarm permission for Android 12+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
             if (!alarmManager.canScheduleExactAlarms()) {
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                 startActivity(intent)
@@ -140,9 +139,10 @@ class MainActivity : AppCompatActivity() {
         val prayerTimes = prayerRepository.calculatePrayerTimes(location, Date())
         val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
-        binding.tvLocation.text = location.cityLabel
+        val tzAbbr = getTimezoneAbbreviation(location.timezoneId)
+        binding.tvLocation.text = if (tzAbbr.isNotEmpty()) "${location.cityLabel} ($tzAbbr)" else location.cityLabel
 
-        val now = LocalDateTime.now()
+        val now = ZonedDateTime.now(ZoneId.of(location.timezoneId))
         val next = findNextPrayer(prayerTimes, now)
         nextPrayerName = getPrayerDisplayName(next.first)
         nextPrayerTime = next.second
@@ -180,6 +180,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun getTimezoneAbbreviation(timezoneId: String): String {
+        return when (timezoneId) {
+            "Asia/Jakarta", "Asia/Pontianak" -> "WIB"
+            "Asia/Makassar", "Asia/Banjarmasin", "Asia/Samarinda", "Asia/Balikpapan", "Asia/Denpasar", "Asia/Mataram", "Asia/Kupang" -> "WITA"
+            "Asia/Jayapura", "Asia/Ambon", "Asia/Manokwari" -> "WIT"
+            else -> ""
+        }
+    }
+
     private fun getPrayerDisplayName(name: PrayerName): String {
         return when (name) {
             PrayerName.IMSAK -> getString(R.string.prayer_imsak)
@@ -192,7 +201,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun findNextPrayer(prayerTimes: PrayerTimes, now: LocalDateTime): Pair<PrayerName, LocalDateTime> {
+    private fun findNextPrayer(prayerTimes: PrayerTimes, now: ZonedDateTime): Pair<PrayerName, ZonedDateTime> {
         val times = listOf(
             PrayerName.IMSAK to prayerTimes.imsak,
             PrayerName.FAJR to prayerTimes.fajr,
@@ -211,19 +220,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateCountdownUI() {
         val target = nextPrayerTime ?: return
-        val now = LocalDateTime.now()
+        val now = ZonedDateTime.now(target.zone)
         val diff = Duration.between(now, target)
 
         if (diff.isNegative || diff.isZero) {
-            // Should refresh for the next one
-            // In a real app, re-fetch prayer times
-            binding.tvCountdown.text = "00:00:00"
+            binding.tvCountdown.text = "-00:00:00"
+            loadCurrentData() 
             return
         }
 
         val hours = diff.toHours()
         val minutes = diff.toMinutes() % 60
         val seconds = diff.seconds % 60
-        binding.tvCountdown.text = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds)
+        binding.tvCountdown.text = String.format(Locale.getDefault(), "-%02d:%02d:%02d", hours, minutes, seconds)
     }
 }

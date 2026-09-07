@@ -18,7 +18,8 @@
     <string name="prayer_isya">Isya</string>
 
     <string name="nav_home">Home</string>
-    <string name="nav_jadwal">Jadwal</string>
+    <string name="nav_kiblat">Kiblat</string>
+    <string name="nav_settings">Pengaturan</string>
     <string name="notification_channel_name">Waktu Sholat</string>
     <string name="notification_channel_desc">Notifikasi waktu sholat</string>
     <string name="notification_content_text">Saatnya menunaikan ibadah sholat %1$s</string>

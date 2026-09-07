@@ -5,9 +5,9 @@
         android:icon="@android:drawable/ic_menu_today"
         android:title="@string/nav_home" />
     <item
-        android:id="@+id/nav_calendar"
-        android:icon="@android:drawable/ic_menu_month"
-        android:title="@string/nav_jadwal" />
+        android:id="@+id/nav_kiblat"
+        android:icon="@android:drawable/ic_menu_compass"
+        android:title="@string/nav_kiblat" />
     <item
         android:id="@+id/nav_settings"
         android:icon="@android:drawable/ic_menu_manage"
