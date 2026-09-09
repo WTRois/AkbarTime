@@ -44,3 +44,7 @@ google-services.json
 
 # Kotlin
 .kotlin/
+
+# Docs & Agent rules
+docs/
+AGENTS.md
