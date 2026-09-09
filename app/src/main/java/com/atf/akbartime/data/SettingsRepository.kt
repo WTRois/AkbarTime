@@ -7,6 +7,10 @@ import java.lang.Double
 class SettingsRepository(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("prayer_settings", Context.MODE_PRIVATE)
 
+    companion object {
+        val DEFAULT_LOCATION = UserLocation(-6.2088, 106.8456, "Asia/Jakarta", "Jakarta")
+    }
+
     fun saveLocation(location: UserLocation) {
         prefs.edit().apply {
             putLong("lat", Double.doubleToRawLongBits(location.latitude))
@@ -17,13 +21,13 @@ class SettingsRepository(context: Context) {
         }
     }
 
-    fun getLocation(): UserLocation? {
-        if (!prefs.contains("lat")) return null
+    fun getLocation(): UserLocation {
+        if (!prefs.contains("lat")) return DEFAULT_LOCATION
         return UserLocation(
             latitude = Double.longBitsToDouble(prefs.getLong("lat", 0)),
             longitude = Double.longBitsToDouble(prefs.getLong("lng", 0)),
-            timezoneId = prefs.getString("timezone", "UTC") ?: "UTC",
-            cityLabel = prefs.getString("city", "Unknown") ?: "Unknown"
+            timezoneId = prefs.getString("timezone", DEFAULT_LOCATION.timezoneId) ?: DEFAULT_LOCATION.timezoneId,
+            cityLabel = prefs.getString("city", DEFAULT_LOCATION.cityLabel) ?: DEFAULT_LOCATION.cityLabel
         )
     }
 

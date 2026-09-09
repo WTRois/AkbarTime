@@ -3,8 +3,11 @@
     <style name="Base.Theme.AkbarTime" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/neob_primary</item>
         <item name="colorSecondary">@color/neob_primary</item>
+        <item name="colorSurface">@color/neob_background</item>
         <item name="android:windowBackground">@color/neob_background</item>
         <item name="android:statusBarColor">@color/neob_background</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <!-- Global font (Poppins for all body text) -->
         <item name="android:fontFamily">@font/poppins</item>
     </style>

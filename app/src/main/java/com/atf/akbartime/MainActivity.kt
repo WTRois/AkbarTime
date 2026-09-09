@@ -13,6 +13,7 @@ import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.atf.akbartime.alarm.AlarmScheduler
 import com.atf.akbartime.data.PrayerName
 import com.atf.akbartime.data.PrayerTimes
 import com.atf.akbartime.data.SettingsRepository
@@ -64,7 +65,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        binding.bottomNavigation.selectedItemId = R.id.nav_home
         loadCurrentData()
+        AlarmScheduler(this).scheduleUpcomingAlarms()
     }
 
     override fun onDestroy() {
@@ -75,13 +78,20 @@ class MainActivity : AppCompatActivity() {
     private fun setupListeners() {
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
+                R.id.nav_home -> true
                 R.id.nav_kiblat -> {
-                    startActivity(Intent(this, QiblaActivity::class.java))
+                    val intent = Intent(this, QiblaActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                    }
+                    startActivity(intent)
                     overridePendingTransition(0, 0)
                     true
                 }
                 R.id.nav_settings -> {
-                    startActivity(Intent(this, SettingsActivity::class.java))
+                    val intent = Intent(this, SettingsActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                    }
+                    startActivity(intent)
                     overridePendingTransition(0, 0)
                     true
                 }
@@ -91,7 +101,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadCurrentData() {
-        val location = settingsRepository.getLocation() ?: UserLocation(-6.2088, 106.8456, "Asia/Jakarta", "Jakarta")
+        val location = settingsRepository.getLocation()
         updatePrayerTimes(location)
         updateDateUI()
     }

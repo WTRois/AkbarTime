@@ -54,22 +54,32 @@ class SettingsActivity : AppCompatActivity() {
         setupBatteryOptimization()
     }
 
+    override fun onResume() {
+        super.onResume()
+        binding.bottomNavigation.selectedItemId = R.id.nav_settings
+    }
+
     private fun setupBottomNav() {
         binding.bottomNavigation.selectedItemId = R.id.nav_settings
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    startActivity(Intent(this, MainActivity::class.java))
+                    val intent = Intent(this, MainActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                    }
+                    startActivity(intent)
                     overridePendingTransition(0, 0)
-                    finish()
                     true
                 }
                 R.id.nav_kiblat -> {
-                    startActivity(Intent(this, QiblaActivity::class.java))
+                    val intent = Intent(this, QiblaActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                    }
+                    startActivity(intent)
                     overridePendingTransition(0, 0)
-                    finish()
                     true
                 }
+                R.id.nav_settings -> true
                 else -> false
             }
         }
@@ -87,9 +97,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun rescheduleAlarms() {
-        val location = settingsRepository.getLocation() ?: return
-        val prayerTimes = prayerRepository.calculatePrayerTimes(location, Date())
-        alarmScheduler.schedulePrayerAlarms(prayerTimes)
+        alarmScheduler.scheduleUpcomingAlarms()
     }
 
     private fun setupToolbar() {

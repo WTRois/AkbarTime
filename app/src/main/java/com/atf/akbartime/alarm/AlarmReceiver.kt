@@ -1,16 +1,14 @@
 package com.atf.akbartime.alarm
 
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.media.AudioAttributes
 import android.media.AudioManager
-import android.media.MediaPlayer
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.atf.akbartime.R
@@ -21,9 +19,24 @@ class AlarmReceiver : BroadcastReceiver() {
     companion object {
         private const val CHANNEL_ID = "prayer_reminder_channel"
         private const val NOTIFICATION_ID = 1001
+        const val ACTION_RESTORE_RINGER_MODE = "com.atf.akbartime.alarm.ACTION_RESTORE_RINGER_MODE"
+        const val EXTRA_ORIGINAL_RINGER_MODE = "EXTRA_ORIGINAL_RINGER_MODE"
+        private const val RINGER_RESTORE_REQUEST_CODE = 9999
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == ACTION_RESTORE_RINGER_MODE) {
+            val originalMode = intent.getIntExtra(EXTRA_ORIGINAL_RINGER_MODE, AudioManager.RINGER_MODE_NORMAL)
+            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            try {
+                audioManager.ringerMode = originalMode
+                Log.d("AlarmReceiver", "Restored ringer mode to: $originalMode")
+            } catch (e: Exception) {
+                Log.e("AlarmReceiver", "Error restoring ringer mode", e)
+            }
+            return
+        }
+
         val prayerName = intent.getStringExtra("PRAYER_NAME") ?: return
         val isPreReminder = intent.getBooleanExtra("IS_PRE_REMINDER", false)
         
@@ -32,20 +45,30 @@ class AlarmReceiver : BroadcastReceiver() {
         if (isPreReminder) {
             showPreReminderNotification(context, prayerName)
         } else {
-            showNotification(context, prayerName)
-            
             val settings = SettingsRepository(context)
-            try {
-                if (settings.isAdzanEnabled(PrayerName.valueOf(prayerName))) {
-                    if (isMainPrayer(prayerName)) {
-                        Log.d("AlarmReceiver", "Playing adzan for $prayerName")
-                        playAdzan(context)
-                        handleSilentMode(context)
-                    }
-                }
+            val isAdzanEnabled = try {
+                settings.isAdzanEnabled(PrayerName.valueOf(prayerName))
             } catch (e: Exception) {
-                Log.e("AlarmReceiver", "Error in onReceive", e)
+                false
             }
+
+            if (isAdzanEnabled && isMainPrayer(prayerName)) {
+                Log.d("AlarmReceiver", "Starting AdzanService for $prayerName")
+                val serviceIntent = Intent(context, AdzanService::class.java).apply {
+                    putExtra("PRAYER_NAME", getPrayerDisplayName(context, prayerName))
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(serviceIntent)
+                } else {
+                    context.startService(serviceIntent)
+                }
+                handleSilentMode(context)
+            } else {
+                showNotification(context, prayerName)
+            }
+
+            // Immediately schedule upcoming 24h rolling cycle
+            AlarmScheduler(context).scheduleUpcomingAlarms()
         }
     }
 
@@ -67,21 +90,46 @@ class AlarmReceiver : BroadcastReceiver() {
                 // Set to vibrate
                 audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
                 
-                // Restore after 15 minutes
-                Handler(Looper.getMainLooper()).postDelayed({
-                    try {
-                        audioManager.ringerMode = originalMode
-                    } catch (e: Exception) {
-                        Log.e("AlarmReceiver", "Error restoring ringer mode", e)
-                    }
-                }, 15 * 60 * 1000)
+                // Restore after 15 minutes reliably via AlarmManager
+                val restoreIntent = Intent(context, AlarmReceiver::class.java).apply {
+                    action = ACTION_RESTORE_RINGER_MODE
+                    putExtra(EXTRA_ORIGINAL_RINGER_MODE, originalMode)
+                }
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    RINGER_RESTORE_REQUEST_CODE,
+                    restoreIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                val triggerAtMillis = System.currentTimeMillis() + (15 * 60 * 1000)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                } else {
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                }
             } catch (e: SecurityException) {
                 Log.e("AlarmReceiver", "SecurityException when changing ringer mode", e)
             }
         }
     }
 
+    private fun ensureNotificationChannel(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                context.getString(R.string.notification_channel_name),
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = context.getString(R.string.notification_channel_desc)
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
     private fun showPreReminderNotification(context: Context, prayerName: String) {
+        ensureNotificationChannel(context)
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val prayerDisplayName = getPrayerDisplayName(context, prayerName)
 
@@ -97,19 +145,8 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 
     private fun showNotification(context: Context, prayerName: String) {
+        ensureNotificationChannel(context)
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                context.getString(R.string.notification_channel_name),
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = context.getString(R.string.notification_channel_desc)
-            }
-            notificationManager.createNotificationChannel(channel)
-        }
-
         val prayerDisplayName = getPrayerDisplayName(context, prayerName)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -139,40 +176,5 @@ class AlarmReceiver : BroadcastReceiver() {
 
     private fun isMainPrayer(name: String): Boolean {
         return name != PrayerName.IMSAK.name && name != PrayerName.DHUHA.name
-    }
-
-    private fun playAdzan(context: Context) {
-        try {
-            val mediaPlayer = MediaPlayer()
-            
-            // Use Alarm stream so it rings even if Media is muted
-            val audioAttributes = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ALARM)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build()
-            mediaPlayer.setAudioAttributes(audioAttributes)
-
-            val afd = context.resources.openRawResourceFd(R.raw.adzan)
-            mediaPlayer.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-            afd.close()
-
-            mediaPlayer.setOnPreparedListener { 
-                Log.d("AlarmReceiver", "MediaPlayer prepared, starting playback")
-                it.start() 
-            }
-            mediaPlayer.setOnCompletionListener { 
-                Log.d("AlarmReceiver", "MediaPlayer completed, releasing")
-                it.release() 
-            }
-            mediaPlayer.setOnErrorListener { mp, what, extra ->
-                Log.e("AlarmReceiver", "MediaPlayer error: what=$what, extra=$extra")
-                mp.release()
-                true
-            }
-            
-            mediaPlayer.prepareAsync()
-        } catch (e: Exception) {
-            Log.e("AlarmReceiver", "Error playing adzan", e)
-        }
     }
 }
